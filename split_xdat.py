@@ -14,11 +14,14 @@ def split_xdat():
     natom = conf_entries[1] - conf_entries[0]
 
     # extract atomic positions of each configuration and write to POSCAR_$n
-    for entry in conf_entries:
+    for inum, entry in enumerate(conf_entries):
         conf_id = int(xdatcar[entry].split()[2])
         nl0 = entry
         nl1 = nl0 + natom
-        with open("POSCAR_" + str('%04d' % conf_id), "w") as poscar_file:
+        if inum != conf_id:
+            print(f'the id of {inum} is {conf_id}')
+
+        with open("POSCAR_" + str('%04d' % inum), "w") as poscar_file:
             for line in poscar_header:
                 poscar_file.write(line)
             for line in xdatcar[nl0:nl1]:

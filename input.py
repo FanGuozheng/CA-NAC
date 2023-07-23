@@ -6,6 +6,9 @@ from split_xdat import split_xdat
 
 
 run_scf = True  # If run SCF calculations to get wavefunction data
+restart = True
+if restart:
+    restart_geometry = 20  # equals to the last path with WAVECAR but without NACs
 # Before running, please:
 # 1. copy XDATCAR from MD calculations
 # 2. revise `run_vasp.sh` to make it adpative to current platform
@@ -82,8 +85,32 @@ if not run_scf:
 else:
     Dirs = sorted(glob.glob("POSCAR_*"))
 
+    if restart:
+        # remove all previous geometric files
+        [os.system(f'rm {ii}') for ii in Dirs[: restart_geometry - 1]]
+        # check if previous file has WAVECAR
+        is_wavecar = os.path.isfile(Dirs[restart_geometry - 1].split("_", 1)[1] + '/WAVECAR')
+        if not is_wavecar:
+            raise FileExistsError(f'warning: {Dirs[restart_geometry - 1]} do not has WAVECAR')
+
+        # save previous NAC files
+        file_list = os.listdir('./')
+
+        # Filter the files that start with the specified prefix
+        ca_files = [file for file in file_list if file.startswith('CA')]
+
+        # remove to prevent be covered by new files
+        for ii in ca_files:
+            os.system(f'mv {ii} {ii}.old')
+
+        # get new Dirs for calculations
+        Dirs = sorted(glob.glob("POSCAR_*"))
+        dir_last = Dirs[0].split("_", 1)[1] + '/'
+
+    else:
+        dir_last = None
+
     n_batch = math.ceil(len(Dirs) / batch)
-    dir_last = None
     new_nac = True
 
     for ii in range(0, len(Dirs), batch):

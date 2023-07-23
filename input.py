@@ -2,13 +2,17 @@
 # -*- coding: utf-8 -*-
 import os, math, glob
 from CAnac import nac_calc
-from split_xdat import split_xdat
+from split_xdat import split_xdat, merge_xdat
 
 
 run_scf = True  # If run SCF calculations to get wavefunction data
 restart = True
 if restart:
     restart_geometry = 20  # equals to the last path with WAVECAR but without NACs
+    xda_list = ['XDATCAR0', 'XDATCAR1']
+else:
+    xda_list = ['XDATCAR']
+    
 # Before running, please:
 # 1. copy XDATCAR from MD calculations
 # 2. revise `run_vasp.sh` to make it adpative to current platform
@@ -21,7 +25,8 @@ if not run_scf:  # traditional CA-NAC calculations
     T_end = 50
 else:
     # split geometric data
-    split_xdat()
+    xda_data = merge_xdat(xda_list)
+    split_xdat(xda_data)
     path_to_run_vasp = 'run_vasp.sh'
 
 # NAC calculations and Genration of standard input for HFNAMD or PYXAID

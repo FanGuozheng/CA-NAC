@@ -6,13 +6,7 @@ from split_xdat import split_xdat, merge_xdat
 
 
 run_scf = True  # If run SCF calculations to get wavefunction data
-restart = True
-if restart:
-    restart_geometry = 20  # equals to the last path with WAVECAR but without NACs
-    xda_list = ['XDATCAR0', 'XDATCAR1']
-else:
-    xda_list = ['XDATCAR']
-    
+
 # Before running, please:
 # 1. copy XDATCAR from MD calculations
 # 2. revise `run_vasp.sh` to make it adpative to current platform
@@ -20,13 +14,13 @@ else:
 
 batch = 5  # wavefunction data is huge, how many systems (wavefunction data)
             # calculate and store each time
-if not run_scf:  # traditional CA-NAC calculations
-    T_start = 1
-    T_end = 50
-else:
+xda_list = ['XDATCAR']
+T_start = 20
+T_end = 30
+if run_scf:  # traditional CA-NAC calculations
     # split geometric data
     xda_data = merge_xdat(xda_list)
-    split_xdat(xda_data)
+    split_xdat(xda_data, T_start, T_end)
     path_to_run_vasp = 'run_vasp.sh'
 
 # NAC calculations and Genration of standard input for HFNAMD or PYXAID
@@ -90,30 +84,24 @@ if not run_scf:
 else:
     Dirs = sorted(glob.glob("POSCAR_*"))
 
-    if restart:
-        # remove all previous geometric files
-        [os.system(f'rm {ii}') for ii in Dirs[: restart_geometry - 1]]
-        # check if previous file has WAVECAR
-        is_wavecar = os.path.isfile(Dirs[restart_geometry - 1].split("_", 1)[1] + '/WAVECAR')
-        if not is_wavecar:
-            raise FileExistsError(f'warning: {Dirs[restart_geometry - 1]} do not has WAVECAR')
+    # check if previous file has WAVECAR
+    is_wavecar = os.path.isfile(Dirs[0].split("_", 1)[1] + '/WAVECAR')
+    if not is_wavecar:
+        print(f'{Dirs[0]} do not has WAVECAR')
 
-        # save previous NAC files
-        file_list = os.listdir('./')
+    # save previous NAC files
+    file_list = os.listdir('./')
 
-        # Filter the files that start with the specified prefix
-        ca_files = [file for file in file_list if file.startswith('CA')]
+    # Filter the files that start with the specified prefix
+    ca_files = [file for file in file_list if file.startswith('CA')]
 
-        # remove to prevent be covered by new files
-        for ii in ca_files:
-            os.system(f'mv {ii} {ii}.old')
+    # remove to prevent be covered by new files
+    for ii in ca_files:
+        os.system(f'mv {ii} {ii}.old')
 
-        # get new Dirs for calculations
-        Dirs = sorted(glob.glob("POSCAR_*"))
-        dir_last = Dirs[0].split("_", 1)[1] + '/'
-
-    else:
-        dir_last = None
+    # get new Dirs for calculations
+    Dirs = sorted(glob.glob("POSCAR_*"))
+    dir_last = None
 
     n_batch = math.ceil(len(Dirs) / batch)
     new_nac = True

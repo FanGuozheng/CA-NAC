@@ -380,10 +380,6 @@ def tdolap_from_vaspwfc(dirA, dirB, paw_info=None, is_alle=False,
     cio_tdt = np.zeros([obasis] + list(ci_t.shape),dtype=np.complex)
 
 
-
-    print (cic_t.shape) # shape: (obasis, nplws)
-
-
     t1 = time()
 
     if is_alle:
@@ -470,8 +466,6 @@ def parallel_tdolap_calc(dirA, dirB, checking_dict, nproc=None, is_alle=False,
     pool = multiprocessing.Pool(processes=nproc)
     results = []
 
-
-
     if is_alle:
         test(bmin_s, bmax_s, dirA[0])
         paw_info=PawProj_info(dirA[0])
@@ -522,9 +516,6 @@ def parallel_nac_calc(runDirs, nproc=None,
     nproc = multiprocessing.cpu_count() if nproc is None else nproc
     pool = multiprocessing.Pool(processes=nproc)
     results = []
-
-
-
 
 
     for w1 in runDirs:
@@ -648,7 +639,6 @@ def nac_calc(runDirs, checking_dict, nproc=None, is_gamma=False,
                           "(is_real = False), which are not supported by" \
                           " Hefei-NAMD and PYXAID(default integrator)")
                     print("Please be aware of that!!!")
-
 
         else:
             print("WAVECAR generation are not finished" \

@@ -1,4 +1,6 @@
 #! /usr/bin/env python
+import os
+import numpy as np
 
 
 def merge_xdat(files: list):
@@ -37,7 +39,7 @@ def merge_xdat(files: list):
 
 
 # read XDATCAR
-def split_xdat(geometries: dict = None):
+def split_xdat(geometries: dict = None, start: int = 0, end: int = -1):
     if geometries is None:
         with open("XDATCAR", "r") as xdatcar_file:
             xdatcar = xdatcar_file.readlines()
@@ -56,7 +58,9 @@ def split_xdat(geometries: dict = None):
         natom = geometries['natom']
 
     # extract atomic positions of each configuration and write to POSCAR_$n
-    for inum, entry in enumerate(conf_entries):
+    os.system('rm POSCAR_*')
+    num_list = np.arange(len(conf_entries)).tolist()[start - 1: end]
+    for inum, entry in zip(num_list, conf_entries[start - 1: end]):
         nl0 = entry
         nl1 = nl0 + natom
 
